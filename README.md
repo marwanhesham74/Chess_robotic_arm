@@ -1,5 +1,3 @@
-أيوه، نضيفها كـsection قصيرة جدًا بعد الـworkflow، وتركز على العلاقة بين الأنظمة من غير تفاصيل تنفيذية.
-
 # Chess Robotic Arm
 
 ## Project Idea
