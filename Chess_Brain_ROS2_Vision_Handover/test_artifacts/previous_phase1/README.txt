@@ -1,0 +1,1 @@
+These are USER-SUPPLIED results from the earlier Phase 1 implementation. They are NOT test results for the new handover v1.0 code. They model simulated-perfect robot/camera behaviour, not real hardware.

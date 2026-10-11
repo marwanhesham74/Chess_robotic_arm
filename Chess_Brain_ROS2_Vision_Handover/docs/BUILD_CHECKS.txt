@@ -1,0 +1,14 @@
+Chess Brain ROS 2 / Vision Handover v1.0
+Static Python compile: PASS (9 files)
+ROS package.xml XML parse: PASS
+64-cell template structure: PASS
+64-squares coordinate CSV: PASS
+Previous-phase results included as historical reference: YES
+
+NOT EXECUTED HERE:
+- python-chess unit tests (dependency unavailable offline)
+- Stockfish binary run (not installed in build environment)
+- ROS 2 Jazzy runtime/colcon (not installed in build environment)
+- Real camera/robot integration
+
+Run the commands in README_AR.md and docs/RELEASE_CHECKLIST.md on Ubuntu/ROS host.

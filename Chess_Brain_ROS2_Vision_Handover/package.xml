@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>chess_brain_handover</name>
+  <version>1.0.0</version>
+  <description>Stockfish-backed chess logic with a ROS 2 JSON handover adapter</description>
+  <maintainer email="noreply@example.com">Dual Robotic Arm Chess Team</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>ament_python</buildtool_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <export><build_type>ament_python</build_type></export>
+</package>

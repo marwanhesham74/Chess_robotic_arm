@@ -1,0 +1,13 @@
+{
+  "mode": "SIMULATED_PERFECT_VISION_AND_EXECUTION",
+  "white_preset": "strong",
+  "black_preset": "medium",
+  "result": null,
+  "stop_reason": "max_plies_reached",
+  "plies_committed": 80,
+  "average_think_ms": 753.8,
+  "max_think_ms": 1023.1,
+  "elapsed_wall_s": 61.04,
+  "errors": [],
+  "notes": "A max-ply stop is NOT a draw; no real camera or robot was tested."
+}
