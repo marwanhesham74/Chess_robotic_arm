@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<!--
+  TOP-LEVEL ROBOT DESCRIPTION — chessboard + Robot 1 + Robot 2 in ONE URDF, root link "world".
+
+  Why one combined URDF (Week-1 decision, see docs/02_architecture.md):
+    * one robot_state_publisher -> one coherent TF tree (world -> board / robot1_* / robot2_*)
+    * both arms spawn into Gazebo as one model, joint names stay unique via prefixes
+    * per-arm controllers/namespaces remain possible later (/robot1/..., /robot2/...)
+
+  Arguments:
+    robot1_enabled / robot2_enabled : include each arm (default true)
+    sim_gazebo : add Gazebo plugins (default false -> pure RViz use)
+    use_meshes : use CAD meshes instead of primitives (needs meshes from M1; default false)
+-->
+<robot name="dual_chess" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="robot1_enabled" default="true"/>
+  <xacro:arg name="robot2_enabled" default="true"/>
+  <xacro:arg name="sim_gazebo"     default="false"/>
+  <xacro:arg name="use_meshes"     default="false"/>
+
+  <xacro:include filename="$(find dual_chess_description)/urdf/common/materials.xacro"/>
+  <xacro:include filename="$(find dual_chess_description)/urdf/board/board.macro.xacro"/>
+  <xacro:include filename="$(find dual_chess_description)/urdf/arm/arm.macro.xacro"/>
+  <xacro:include filename="$(find dual_chess_description)/urdf/arm/arm.gazebo.xacro"/>
+
+  <link name="world"/>
+
+  <xacro:chess_board parent="world"/>
+
+  <!-- Robot 1 (white side): -Y of the board, facing +Y.
+       PLACEHOLDER pose; "rotated copy" vs true mirror is for M1/M3 to decide (proposal: "mirrored configurations"). -->
+  <xacro:if value="$(arg robot1_enabled)">
+    <xacro:chess_arm prefix="robot1_" parent="world" material="robot1_blue" use_meshes="$(arg use_meshes)">
+      <origin xyz="0 ${-robot_base_offset} 0" rpy="0 0 ${pi/2}"/>
+    </xacro:chess_arm>
+  </xacro:if>
+
+  <!-- Robot 2 (black side): +Y of the board, facing -Y. -->
+  <xacro:if value="$(arg robot2_enabled)">
+    <xacro:chess_arm prefix="robot2_" parent="world" material="robot2_orange" use_meshes="$(arg use_meshes)">
+      <origin xyz="0 ${robot_base_offset} 0" rpy="0 0 ${-pi/2}"/>
+    </xacro:chess_arm>
+  </xacro:if>
+
+  <!-- Gazebo-only parts -->
+  <xacro:if value="$(arg sim_gazebo)">
+    <!-- Publishes all joint states of the model to gz topic
+         /world/chess_world/model/dual_chess/joint_state (bridged to /joint_states). -->
+    <gazebo>
+      <plugin filename="gz-sim-joint-state-publisher-system"
+              name="gz::sim::systems::JointStatePublisher"/>
+    </gazebo>
+    <xacro:if value="$(arg robot1_enabled)">
+      <xacro:chess_arm_gz prefix="robot1_" ns="robot1"/>
+    </xacro:if>
+    <xacro:if value="$(arg robot2_enabled)">
+      <xacro:chess_arm_gz prefix="robot2_" ns="robot2"/>
+    </xacro:if>
+  </xacro:if>
+
+</robot>

@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<!--
+  Reusable chess-arm macro.  Instantiated twice from dual_chess.urdf.xacro
+  (prefix robot1_ / robot2_).
+
+  *** TOPOLOGY IS A PLACEHOLDER ***  The PDFs do not state DOF or joint types.
+  This generic 5-revolute-joint arm (yaw, pitch, pitch, pitch, roll) + fixed gripper
+  exists only so the ROS 2 / TF / Gazebo / RViz pipeline can be exercised.
+  TODO: Replace joint list with final DOF/joint configuration from M1 + frames from M3.
+
+  Every link/joint name is prefixed, so two instances never collide in TF.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find dual_chess_description)/urdf/common/inertial_macros.xacro"/>
+  <xacro:include filename="$(find dual_chess_description)/urdf/arm/arm_params_placeholder.xacro"/>
+
+  <!-- geom: 'cyl' -> radius=a, length=h ; 'box' -> size = a x b x h.
+       Link frame = bottom/proximal joint axis; geometry extends along +Z. -->
+  <xacro:macro name="arm_link" params="prefix name geom mass a b h material use_meshes">
+    <link name="${prefix}${name}">
+      <visual>
+        <xacro:if value="${use_meshes}">
+          <geometry>
+            <mesh filename="package://dual_chess_description/meshes/visual/arm/${name}.stl" scale="${arm_mesh_scale}"/>
+          </geometry>
+        </xacro:if>
+        <xacro:unless value="${use_meshes}">
+          <origin xyz="0 0 ${h/2}" rpy="0 0 0"/>
+          <xacro:if value="${geom == 'cyl'}">
+            <geometry><cylinder radius="${a}" length="${h}"/></geometry>
+          </xacro:if>
+          <xacro:if value="${geom == 'box'}">
+            <geometry><box size="${a} ${b} ${h}"/></geometry>
+          </xacro:if>
+        </xacro:unless>
+        <material name="${material}"/>
+      </visual>
+      <collision>
+        <xacro:if value="${use_meshes}">
+          <geometry>
+            <mesh filename="package://dual_chess_description/meshes/collision/arm/${name}.stl" scale="${arm_mesh_scale}"/>
+          </geometry>
+        </xacro:if>
+        <xacro:unless value="${use_meshes}">
+          <origin xyz="0 0 ${h/2}" rpy="0 0 0"/>
+          <xacro:if value="${geom == 'cyl'}">
+            <geometry><cylinder radius="${a}" length="${h}"/></geometry>
+          </xacro:if>
+          <xacro:if value="${geom == 'box'}">
+            <geometry><box size="${a} ${b} ${h}"/></geometry>
+          </xacro:if>
+        </xacro:unless>
+      </collision>
+      <!-- PLACEHOLDER inertial: primitive solid, COM at geometric centre.
+           TODO: replace with CAD mass properties from M1. -->
+      <inertial>
+        <origin xyz="0 0 ${h/2}" rpy="0 0 0"/>
+        <mass value="${mass}"/>
+        <xacro:if value="${geom == 'cyl'}">
+          <xacro:cylinder_inertia m="${mass}" r="${a}" h="${h}"/>
+        </xacro:if>
+        <xacro:if value="${geom == 'box'}">
+          <xacro:box_inertia m="${mass}" x="${a}" y="${b}" z="${h}"/>
+        </xacro:if>
+      </inertial>
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="arm_joint" params="prefix name parent child z axis lower upper">
+    <joint name="${prefix}${name}" type="revolute">
+      <parent link="${prefix}${parent}"/>
+      <child link="${prefix}${child}"/>
+      <origin xyz="0 0 ${z}" rpy="0 0 0"/>
+      <axis xyz="${axis}"/>
+      <limit lower="${lower}" upper="${upper}" effort="${arm_effort_limit}" velocity="${arm_velocity_limit}"/>
+      <dynamics damping="${arm_joint_damping}" friction="${arm_joint_friction}"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- prefix : "robot1_" / "robot2_"      parent : link to mount on
+       <origin> block : pose of the arm base relative to parent -->
+  <xacro:macro name="chess_arm" params="prefix parent material use_meshes *origin">
+
+    <xacro:arm_link prefix="${prefix}" name="base_link" geom="cyl" mass="${arm_base_mass}"
+                    a="${arm_base_radius}" b="0" h="${arm_base_height}" material="${material}" use_meshes="${use_meshes}"/>
+    <joint name="${prefix}mount_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${prefix}base_link"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+
+    <!-- link1: shoulder column, joint1 = base yaw (axis Z) -->
+    <xacro:arm_link prefix="${prefix}" name="link1" geom="cyl" mass="${arm_link1_mass}"
+                    a="${arm_link1_radius}" b="0" h="${arm_link1_len}" material="${material}" use_meshes="${use_meshes}"/>
+    <xacro:arm_joint prefix="${prefix}" name="joint1" parent="base_link" child="link1" z="${arm_base_height}"
+                     axis="0 0 1" lower="${arm_j1_lower}" upper="${arm_j1_upper}"/>
+
+    <!-- link2: upper arm, joint2 = shoulder pitch (axis Y) -->
+    <xacro:arm_link prefix="${prefix}" name="link2" geom="box" mass="${arm_link2_mass}"
+                    a="${arm_link2_width}" b="${arm_link2_width}" h="${arm_link2_len}" material="${material}" use_meshes="${use_meshes}"/>
+    <xacro:arm_joint prefix="${prefix}" name="joint2" parent="link1" child="link2" z="${arm_link1_len}"
+                     axis="0 1 0" lower="${arm_j2_lower}" upper="${arm_j2_upper}"/>
+
+    <!-- link3: forearm, joint3 = elbow pitch (axis Y) -->
+    <xacro:arm_link prefix="${prefix}" name="link3" geom="box" mass="${arm_link3_mass}"
+                    a="${arm_link3_width}" b="${arm_link3_width}" h="${arm_link3_len}" material="${material}" use_meshes="${use_meshes}"/>
+    <xacro:arm_joint prefix="${prefix}" name="joint3" parent="link2" child="link3" z="${arm_link2_len}"
+                     axis="0 1 0" lower="${arm_j3_lower}" upper="${arm_j3_upper}"/>
+
+    <!-- link4: wrist pitch body, joint4 (axis Y) -->
+    <xacro:arm_link prefix="${prefix}" name="link4" geom="cyl" mass="${arm_link4_mass}"
+                    a="${arm_link4_radius}" b="0" h="${arm_link4_len}" material="${material}" use_meshes="${use_meshes}"/>
+    <xacro:arm_joint prefix="${prefix}" name="joint4" parent="link3" child="link4" z="${arm_link3_len}"
+                     axis="0 1 0" lower="${arm_j4_lower}" upper="${arm_j4_upper}"/>
+
+    <!-- link5: wrist roll flange, joint5 (axis Z) -->
+    <xacro:arm_link prefix="${prefix}" name="link5" geom="cyl" mass="${arm_link5_mass}"
+                    a="${arm_link5_radius}" b="0" h="${arm_link5_len}" material="${material}" use_meshes="${use_meshes}"/>
+    <xacro:arm_joint prefix="${prefix}" name="joint5" parent="link4" child="link5" z="${arm_link4_len}"
+                     axis="0 0 1" lower="${arm_j5_lower}" upper="${arm_j5_upper}"/>
+
+    <!-- gripper_link: PLACEHOLDER body (M2 owns the real gripper). Fixed to link5. -->
+    <xacro:arm_link prefix="${prefix}" name="gripper_link" geom="box" mass="${gripper_mass}"
+                    a="${gripper_width}" b="${gripper_depth}" h="${gripper_len}" material="gripper_dark" use_meshes="${use_meshes}"/>
+    <joint name="${prefix}gripper_joint" type="fixed">
+      <parent link="${prefix}link5"/>
+      <child link="${prefix}gripper_link"/>
+      <origin xyz="0 0 ${arm_link5_len}" rpy="0 0 0"/>
+    </joint>
+
+    <!-- tcp_link: tool centre point, the frame IK (M3) will target. TODO: offset from M2/M3. -->
+    <link name="${prefix}tcp_link"/>
+    <joint name="${prefix}tcp_joint" type="fixed">
+      <parent link="${prefix}gripper_link"/>
+      <child link="${prefix}tcp_link"/>
+      <origin xyz="0 0 ${gripper_len}" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+</robot>

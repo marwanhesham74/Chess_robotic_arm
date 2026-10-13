@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>dual_chess_bringup</name>
+  <version>0.1.0</version>
+  <description>Top-level launch files for the dual-arm chess robot simulation (M6, Week 1). Later weeks add control/MoveIt launches here.</description>
+  <maintainer email="TODO_your_email@example.com">Youssef Sameh</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>dual_chess_description</exec_depend>
+  <exec_depend>dual_chess_gazebo</exec_depend>
+  <exec_depend>chess_brain_handover</exec_depend>
+  <exec_depend>chess_auto_coordinator</exec_depend>
+  <exec_depend>rviz2</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
