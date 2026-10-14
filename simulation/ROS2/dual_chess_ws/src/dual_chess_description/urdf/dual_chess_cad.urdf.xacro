@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<robot name="dual_chess_cad" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="robot1_enabled" default="true"/>
+  <xacro:arg name="robot2_enabled" default="true"/>
+
+  <xacro:include filename="$(find dual_chess_description)/urdf/common/materials.xacro"/>
+  <xacro:include filename="$(find dual_chess_description)/urdf/board/board.macro.xacro"/>
+  <xacro:include filename="$(find dual_chess_description)/urdf/arm/arm_cad.macro.xacro"/>
+
+  <link name="world"/>
+
+  <xacro:chess_board parent="world"/>
+
+  <xacro:if value="$(arg robot1_enabled)">
+    <xacro:cad_chess_arm prefix="robot1_" parent="world" material="robot1_blue">
+      <origin xyz="0 ${-robot_base_offset} 0" rpy="0 0 ${pi/2}"/>
+    </xacro:cad_chess_arm>
+  </xacro:if>
+
+  <xacro:if value="$(arg robot2_enabled)">
+    <xacro:cad_chess_arm prefix="robot2_" parent="world" material="robot2_orange">
+      <origin xyz="0 ${robot_base_offset} 0" rpy="0 0 ${-pi/2}"/>
+    </xacro:cad_chess_arm>
+  </xacro:if>
+
+</robot>
