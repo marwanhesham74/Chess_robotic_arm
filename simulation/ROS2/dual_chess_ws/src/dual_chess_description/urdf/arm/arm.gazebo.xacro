@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!--
+  Gazebo (Harmonic / gz-sim) extensions for one arm. Included only when sim_gazebo:=true.
+
+  WEEK-1 STAND-IN: one gz JointPositionController (velocity-command mode, no PID) per joint so the arm holds a pose and
+  can be commanded with  std_msgs/Float64  on  /<ns>/jointN/cmd_pos  (bridged, see
+  dual_chess_gazebo/config/bridge.yaml).
+  WEEK 3: replace with gz_ros2_control + ros2_control controllers (M6 + M5). Remove these
+  plugins at that point: they conflict with a ros2_control hardware interface.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- use_velocity_commands: bypasses the PID ("perfect position"); cmd_max is the maximum joint
+       speed. Chosen after the PID version showed an uncommanded wrist offset (robot1_joint5 drift)
+       that depended on placeholder inertia/gains. No gains to tune in Week 1. -->
+  <xacro:macro name="hold_joint" params="prefix ns n">
+    <gazebo>
+      <plugin filename="gz-sim-joint-position-controller-system"
+              name="gz::sim::systems::JointPositionController">
+        <joint_name>${prefix}joint${n}</joint_name>
+        <topic>/${ns}/joint${n}/cmd_pos</topic>
+        <initial_position>0.0</initial_position>
+        <use_velocity_commands>true</use_velocity_commands>
+        <cmd_max>${arm_velocity_limit}</cmd_max>
+        <cmd_min>-${arm_velocity_limit}</cmd_min>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
+  <xacro:macro name="chess_arm_gz" params="prefix ns">
+    <xacro:hold_joint prefix="${prefix}" ns="${ns}" n="1"/>
+    <xacro:hold_joint prefix="${prefix}" ns="${ns}" n="2"/>
+    <xacro:hold_joint prefix="${prefix}" ns="${ns}" n="3"/>
+    <xacro:hold_joint prefix="${prefix}" ns="${ns}" n="4"/>
+    <xacro:hold_joint prefix="${prefix}" ns="${ns}" n="5"/>
+  </xacro:macro>
+</robot>

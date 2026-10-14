@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!-- Chessboard PLACEHOLDER: one static box + frames for TF debugging.
+     No chess pieces here (Week 3 per the 5-week plan). -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find dual_chess_description)/urdf/board/board_params_placeholder.xacro"/>
+
+  <xacro:macro name="chess_board" params="parent">
+    <!-- board_link origin = centre of the board box; z up -->
+    <link name="board_link">
+      <visual>
+        <geometry><box size="${board_size} ${board_size} ${board_thickness}"/></geometry>
+        <material name="board_wood"/>
+      </visual>
+      <collision>
+        <geometry><box size="${board_size} ${board_size} ${board_thickness}"/></geometry>
+      </collision>
+      <!-- Gazebo (sdformat) DELETES a link that has no <inertial> and is fixed to `world`
+           (it gets lumped away), which orphans board_surface/board_a1/board_h8 and fails
+           spawning. So board_link keeps a PLACEHOLDER inertial. The board stays static
+           because it is fixed to world. -->
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="1.0"/>
+        <inertia ixx="${1.0*(board_size*board_size+board_thickness*board_thickness)/12.0}" ixy="0" ixz="0"
+                 iyy="${1.0*(board_size*board_size+board_thickness*board_thickness)/12.0}" iyz="0"
+                 izz="${1.0*(2*board_size*board_size)/12.0}"/>
+      </inertial>
+    </link>
+    <joint name="board_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="board_link"/>
+      <origin xyz="0 0 ${board_thickness/2}" rpy="0 0 0"/>
+    </joint>
+
+    <!-- board_surface: centre of top surface. Chess/board coordinates (M3/M7/M8) hang off this frame. -->
+    <link name="board_surface"/>
+    <joint name="board_surface_joint" type="fixed">
+      <parent link="board_link"/>
+      <child link="board_surface"/>
+      <origin xyz="0 0 ${board_thickness/2}" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Square-centre frames for a1 and h8 (orientation check). Visual markers only. -->
+    <link name="board_a1">
+      <visual>
+        <origin xyz="0 0 0.001"/>
+        <geometry><box size="${board_square*0.6} ${board_square*0.6} 0.002"/></geometry>
+        <material name="marker_a1"/>
+      </visual>
+    </link>
+    <joint name="board_a1_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_a1"/>
+      <origin xyz="${-3.5*board_square} ${-3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_h8">
+      <visual>
+        <origin xyz="0 0 0.001"/>
+        <geometry><box size="${board_square*0.6} ${board_square*0.6} 0.002"/></geometry>
+        <material name="marker_h8"/>
+      </visual>
+    </link>
+    <joint name="board_h8_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_h8"/>
+      <origin xyz="${3.5*board_square} ${3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+</robot>

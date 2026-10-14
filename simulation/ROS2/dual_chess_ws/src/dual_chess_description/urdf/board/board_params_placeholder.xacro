@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+  BOARD / LAYOUT PARAMETERS — *** PLACEHOLDERS ***
+  The PDFs do not give board or square dimensions (M2 measures them in Week 1) nor
+  robot-to-board distance (M1/M4 workspace work).
+  Frame convention below is a PROPOSAL that M3/M7/M8 must confirm:
+     files a..h along +X, ranks 1..8 along +Y, origin = centre of board top surface
+     Robot 1 (white side) at -Y facing +Y; Robot 2 (black side) at +Y facing -Y.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- PLACEHOLDER — final value must come from M2 (board square dimension) -->
+  <xacro:property name="board_square"    value="0.05"/>
+  <!-- PLACEHOLDER — final value must come from M2 (board thickness incl. magnetic layer) -->
+  <xacro:property name="board_thickness" value="0.02"/>
+  <!-- PLACEHOLDER — final value must come from M1/M4 (gap between board edge and robot base centre) -->
+  <xacro:property name="base_gap"        value="0.10"/>
+
+  <xacro:property name="board_size"        value="${8*board_square}"/>
+  <xacro:property name="robot_base_offset" value="${board_size/2 + base_gap}"/>
+</robot>

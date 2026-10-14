@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!--
+  ============================================================================
+  ARM PARAMETERS — *** EVERY VALUE IN THIS FILE IS A PLACEHOLDER ***
+  ============================================================================
+  None of these numbers come from the project PDFs. This is the ONE file to edit
+  when the team delivers real data:
+
+    DOF / joint order / axes ..... M1 (+ M3 frames)  -> joint list in arm.macro.xacro
+    Link lengths, base size ...... M1 ("initial" in Week 1, frozen in Week 2)
+    Joint limits ................. M4 (initial, Week 1), checked by M1
+    Velocity / effort limits ..... M4 / M9 (motor + driver selection)
+    Mass / inertia ............... M1 CAD mass properties (Week 2)
+    Gripper geometry + TCP ....... M2
+
+  Units: metres, kilograms, radians, seconds.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- PLACEHOLDER — final value must come from M1: base size -->
+  <xacro:property name="arm_base_radius"  value="0.06"/>
+  <xacro:property name="arm_base_height"  value="0.05"/>
+
+  <!-- PLACEHOLDER — final value must come from M1/M3: link sizes -->
+  <xacro:property name="arm_link1_radius" value="0.04"/>
+  <xacro:property name="arm_link1_len"    value="0.10"/>
+  <xacro:property name="arm_link2_width"  value="0.04"/>
+  <xacro:property name="arm_link2_len"    value="0.25"/>
+  <xacro:property name="arm_link3_width"  value="0.035"/>
+  <xacro:property name="arm_link3_len"    value="0.25"/>
+  <xacro:property name="arm_link4_radius" value="0.025"/>
+  <xacro:property name="arm_link4_len"    value="0.06"/>
+  <xacro:property name="arm_link5_radius" value="0.025"/>
+  <xacro:property name="arm_link5_len"    value="0.03"/>
+
+  <!-- PLACEHOLDER — final value must come from M1 (CAD mass properties) -->
+  <xacro:property name="arm_base_mass"  value="1.0"/>
+  <xacro:property name="arm_link1_mass" value="0.30"/>
+  <xacro:property name="arm_link2_mass" value="0.40"/>
+  <xacro:property name="arm_link3_mass" value="0.30"/>
+  <xacro:property name="arm_link4_mass" value="0.30"/>
+  <xacro:property name="arm_link5_mass" value="0.30"/>
+
+  <!-- PLACEHOLDER — final value must come from M4 (initial joint limits), checked by M1 -->
+  <xacro:property name="arm_j1_lower" value="-2.80"/>
+  <xacro:property name="arm_j1_upper" value="2.80"/>
+  <xacro:property name="arm_j2_lower" value="-1.57"/>
+  <xacro:property name="arm_j2_upper" value="1.57"/>
+  <xacro:property name="arm_j3_lower" value="-2.00"/>
+  <xacro:property name="arm_j3_upper" value="2.00"/>
+  <xacro:property name="arm_j4_lower" value="-1.57"/>
+  <xacro:property name="arm_j4_upper" value="1.57"/>
+  <xacro:property name="arm_j5_lower" value="-3.14"/>
+  <xacro:property name="arm_j5_upper" value="3.14"/>
+
+  <!-- PLACEHOLDER — final values from M4 (velocity) / M9 (motor torque) -->
+  <xacro:property name="arm_effort_limit"   value="10.0"/>  <!-- N*m -->
+  <xacro:property name="arm_velocity_limit" value="1.0"/>   <!-- rad/s -->
+
+  <!-- Simulation-only damping/friction chosen for numerical stability, NOT hardware data -->
+  <xacro:property name="arm_joint_damping"  value="0.5"/>
+  <xacro:property name="arm_joint_friction" value="0.05"/>
+
+  <!-- PLACEHOLDER — final value must come from M2: gripper body; TCP sits at gripper_len -->
+  <xacro:property name="gripper_width" value="0.06"/>
+  <xacro:property name="gripper_depth" value="0.04"/>
+  <xacro:property name="gripper_len"   value="0.05"/>
+  <xacro:property name="gripper_mass"  value="0.15"/>
+
+  <!-- Mesh scale used only when use_meshes:=true (set to match M1's export units) -->
+  <xacro:property name="arm_mesh_scale" value="1 1 1"/>
+
+  <!-- Week-1 Gazebo hold/command uses JointPositionController in velocity-command mode with
+       cmd_max = arm_velocity_limit (no PID gains). Replaced by ros2_control in Week 3. -->
+</robot>
