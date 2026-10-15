@@ -1,0 +1,52 @@
+# ros_gz_bridge configuration. World name (chess_world) and model name (dual_chess)
+# must match worlds/chess_world.sdf and the -name used by gazebo.launch.py.
+# v1.3 CAD: 3 controlled joints per robot (base_yaw_joint, joint1, joint2).
+
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/joint_states"
+  gz_topic_name: "/world/chess_world/model/dual_chess/joint_state"
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/robot1/base_yaw_joint/cmd_pos"
+  gz_topic_name: "/robot1/base_yaw_joint/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/robot1/joint1/cmd_pos"
+  gz_topic_name: "/robot1/joint1/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/robot1/joint2/cmd_pos"
+  gz_topic_name: "/robot1/joint2/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/robot2/base_yaw_joint/cmd_pos"
+  gz_topic_name: "/robot2/base_yaw_joint/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/robot2/joint1/cmd_pos"
+  gz_topic_name: "/robot2/joint1/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/robot2/joint2/cmd_pos"
+  gz_topic_name: "/robot2/joint2/cmd_pos"
+  ros_type_name: "std_msgs/msg/Float64"
+  gz_type_name: "gz.msgs.Double"
+  direction: ROS_TO_GZ
+

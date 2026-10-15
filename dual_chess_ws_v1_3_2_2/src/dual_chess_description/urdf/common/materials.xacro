@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- Materials are defined ONCE (URDF material names are global). -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <material name="robot1_blue"><color rgba="0.20 0.40 0.80 1.0"/></material>
+  <material name="robot2_orange"><color rgba="0.90 0.50 0.15 1.0"/></material>
+  <material name="gripper_dark"><color rgba="0.15 0.15 0.15 1.0"/></material>
+  <material name="board_wood"><color rgba="0.85 0.80 0.65 1.0"/></material>
+  <material name="square_light"><color rgba="0.95 0.95 0.95 1.0"/></material>
+  <material name="square_dark"><color rgba="0.10 0.10 0.10 1.0"/></material>
+  <material name="marker_a1"><color rgba="0.80 0.10 0.10 1.0"/></material>
+  <material name="marker_h8"><color rgba="0.10 0.65 0.20 1.0"/></material>
+</robot>
