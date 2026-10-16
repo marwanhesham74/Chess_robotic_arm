@@ -1,0 +1,396 @@
+{
+  "schema_version": "1.0",
+  "capture_id": "TEMPLATE_REPLACE_UNIQUE_ID",
+  "source": "overhead_camera",
+  "captured_at": 0.0,
+  "orientation": "a8_top_left",
+  "stable": true,
+  "calibrated": true,
+  "confidence": 0.99,
+  "cells": [
+    {
+      "row": 0,
+      "col": 0,
+      "piece": "r",
+      "confidence": 0.99
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "piece": "n",
+      "confidence": 0.99
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "piece": "b",
+      "confidence": 0.99
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "piece": "q",
+      "confidence": 0.99
+    },
+    {
+      "row": 0,
+      "col": 4,
+      "piece": "k",
+      "confidence": 0.99
+    },
+    {
+      "row": 0,
+      "col": 5,
+      "piece": "b",
+      "confidence": 0.99
+    },
+    {
+      "row": 0,
+      "col": 6,
+      "piece": "n",
+      "confidence": 0.99
+    },
+    {
+      "row": 0,
+      "col": 7,
+      "piece": "r",
+      "confidence": 0.99
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "piece": "p",
+      "confidence": 0.99
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "piece": "p",
+      "confidence": 0.99
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "piece": "p",
+      "confidence": 0.99
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "piece": "p",
+      "confidence": 0.99
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "piece": "p",
+      "confidence": 0.99
+    },
+    {
+      "row": 1,
+      "col": 5,
+      "piece": "p",
+      "confidence": 0.99
+    },
+    {
+      "row": 1,
+      "col": 6,
+      "piece": "p",
+      "confidence": 0.99
+    },
+    {
+      "row": 1,
+      "col": 7,
+      "piece": "p",
+      "confidence": 0.99
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 2,
+      "col": 5,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 2,
+      "col": 6,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 2,
+      "col": 7,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 3,
+      "col": 3,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 3,
+      "col": 6,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 3,
+      "col": 7,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 4,
+      "col": 0,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 4,
+      "col": 1,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 4,
+      "col": 2,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 4,
+      "col": 5,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 4,
+      "col": 6,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 4,
+      "col": 7,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 5,
+      "col": 0,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 5,
+      "col": 1,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 5,
+      "col": 3,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 5,
+      "col": 5,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 5,
+      "col": 6,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 5,
+      "col": 7,
+      "piece": ".",
+      "confidence": 0.99
+    },
+    {
+      "row": 6,
+      "col": 0,
+      "piece": "P",
+      "confidence": 0.99
+    },
+    {
+      "row": 6,
+      "col": 1,
+      "piece": "P",
+      "confidence": 0.99
+    },
+    {
+      "row": 6,
+      "col": 2,
+      "piece": "P",
+      "confidence": 0.99
+    },
+    {
+      "row": 6,
+      "col": 3,
+      "piece": "P",
+      "confidence": 0.99
+    },
+    {
+      "row": 6,
+      "col": 4,
+      "piece": "P",
+      "confidence": 0.99
+    },
+    {
+      "row": 6,
+      "col": 5,
+      "piece": "P",
+      "confidence": 0.99
+    },
+    {
+      "row": 6,
+      "col": 6,
+      "piece": "P",
+      "confidence": 0.99
+    },
+    {
+      "row": 6,
+      "col": 7,
+      "piece": "P",
+      "confidence": 0.99
+    },
+    {
+      "row": 7,
+      "col": 0,
+      "piece": "R",
+      "confidence": 0.99
+    },
+    {
+      "row": 7,
+      "col": 1,
+      "piece": "N",
+      "confidence": 0.99
+    },
+    {
+      "row": 7,
+      "col": 2,
+      "piece": "B",
+      "confidence": 0.99
+    },
+    {
+      "row": 7,
+      "col": 3,
+      "piece": "Q",
+      "confidence": 0.99
+    },
+    {
+      "row": 7,
+      "col": 4,
+      "piece": "K",
+      "confidence": 0.99
+    },
+    {
+      "row": 7,
+      "col": 5,
+      "piece": "B",
+      "confidence": 0.99
+    },
+    {
+      "row": 7,
+      "col": 6,
+      "piece": "N",
+      "confidence": 0.99
+    },
+    {
+      "row": 7,
+      "col": 7,
+      "piece": "R",
+      "confidence": 0.99
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!--
+    CAD arm, corrected from the supplied Assem4.SLDASM URDF + STL.
+    Base yaw is a REAL intended motor axis per project owner; motor body is not separately modeled.
+    Structural frames base_link/link0 are retained for traceability, but the duplicated
+    CAD base solid is rendered and assigned inertia EXACTLY ONCE on base_yaw_link.
+    The joint0 transform and joint1/joint2 axes and transforms remain unchanged.
+    Unknown physical joint stops/motor effort/rated speed are NOT invented.
+  -->
+  <xacro:macro name="cad_chess_arm" params="prefix parent material *origin">
+
+    <!-- Moving body representing the CAD base / motor envelope. Base yaw pivot is
+         at xyz=(0,0,0) of this link, centred under the upright STL body. -->
+    <link name="${prefix}base_yaw_link">
+      <inertial>
+        <origin xyz="-0.00834920606849433 -0.0001580550515595949 0.0348740063996899" rpy="0 0 0"/>
+        <mass value="0.137152664065849"/>
+        <inertia ixx="0.0001130854461784762" ixy="2.181096808120351e-07" ixz="1.285972249639045e-05"
+                 iyy="0.0001015628821625788" iyz="2.433547080519745e-07" izz="4.8682005014185e-05"/>
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="1.5707963267949 0 0.01892161378040547"/>
+        <geometry><mesh filename="package://dual_chess_description/meshes/robot_arm/link0.STL"/></geometry>
+        <material name="${material}"/>
+      </visual>
+      <!-- Approximate primitive collision. Refine from approved mechanical drawing. -->
+      <collision>
+        <origin xyz="0 -1.623701173514291e-16 0.045" rpy="1.5707963267949 0 0.01892161378040547"/>
+        <geometry><box size="0.06 0.09 0.06"/></geometry>
+      </collision>
+    </link>
+
+    <!-- Base yaw hardware is intended but absent in SolidWorks export.
+         Continuous is provisional, pending real hard-stop and motor specifications. -->
+    <joint name="${prefix}base_yaw_joint" type="continuous">
+      <parent link="${parent}"/>
+      <child link="${prefix}base_yaw_link"/>
+      <xacro:insert_block name="origin"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+
+    <!-- Frame-only aliases preserve the exported link/joint reference transforms.
+         They do NOT get extra visual, collision, or inertial mass. -->
+    <link name="${prefix}base_link"/>
+    <joint name="${prefix}base_mount_fixed" type="fixed">
+      <parent link="${prefix}base_yaw_link"/>
+      <child link="${prefix}base_link"/>
+      <origin xyz="0.185810249819478 0.243972086655367 0.126612878977615" rpy="0 0 0"/>
+    </joint>
+    <link name="${prefix}link0"/>
+    <joint name="${prefix}joint0" type="fixed">
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}link0"/>
+      <origin xyz="-0.185810249819478 -0.243972086655367 -0.126612878977615"
+              rpy="1.5707963267949 0 0.0189216137804055"/>
+    </joint>
+
+    <link name="${prefix}link1">
+      <inertial>
+        <origin xyz="-0.0834293794171425 -2.02875618701692e-06 -0.024166126213827" rpy="0 0 0"/>
+        <mass value="0.366704750246748"/>
+        <inertia ixx="0.00012736294072155" ixy="-7.61287766635057e-08" ixz="-2.69022395526234e-05"
+                 iyy="0.00189457473585642" iyz="-6.98463767142371e-10" izz="0.00197322993923862"/>
+      </inertial>
+      <visual>
+        <geometry><mesh filename="package://dual_chess_description/meshes/robot_arm/link1.STL"/></geometry>
+        <material name="${material}"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.10 0 -0.02" rpy="0 0 0"/>
+        <geometry><box size="0.26 0.06 0.04"/></geometry>
+      </collision>
+    </link>
+    <!-- SolidWorks joint1, exactly as exported -->
+    <joint name="${prefix}joint1" type="continuous">
+      <parent link="${prefix}link0"/>
+      <child link="${prefix}link1"/>
+      <origin xyz="0 0.06 0" rpy="1.57079632679488 1.39871137927 -1.57079632679491"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+
+    <link name="${prefix}link2">
+      <inertial>
+        <origin xyz="-0.0834293854087735 -2.02919242922595e-06 -0.0241661271331371" rpy="0 0 0"/>
+        <mass value="0.366704788088245"/>
+        <inertia ixx="0.000127362948407977" ixy="-7.6136372281011e-08" ixz="-2.69022413756202e-05"
+                 iyy="0.00189457488856351" iyz="-6.98324032778489e-10" izz="0.00197323009973326"/>
+      </inertial>
+      <visual>
+        <geometry><mesh filename="package://dual_chess_description/meshes/robot_arm/link2.STL"/></geometry>
+        <material name="${material}"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.10 0 -0.02" rpy="0 0 0"/>
+        <geometry><box size="0.26 0.06 0.04"/></geometry>
+      </collision>
+    </link>
+    <!-- SolidWorks joint2, exactly as exported -->
+    <joint name="${prefix}joint2" type="continuous">
+      <parent link="${prefix}link1"/>
+      <child link="${prefix}link2"/>
+      <origin xyz="-0.200000000000002 0 0" rpy="-3.14159265358979 0 -0.0823720646867807"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+
+    <!-- TEMPORARY DESIGN: rounded CAD-inspired wrist and compact fork gripper.
+         No motor meshes are introduced; all original CAD joint transforms above
+         stay unchanged. The new joint's provisional neutral frame is a PARKED
+         pose so both arms are separated in Home without wrist motion on spawn.
+         The actual mechanical Wrist & Gripper CAD will replace these visuals. -->
+    <link name="${prefix}link3">
+      <inertial>
+        <origin xyz="-0.085 0 0" rpy="0 0 0"/>
+        <mass value="0.12"/>
+        <inertia ixx="0.000072" ixy="0" ixz="0" iyy="0.000325" iyz="0" izz="0.000325"/>
+      </inertial>
+      <!-- Rounded tapered arm shell, smoothly joined at the CAD link2 tip. -->
+      <visual name="rounded_wrist_visual">
+        <geometry><mesh filename="package://dual_chess_description/meshes/robot_arm/temporary_wrist.stl"/></geometry>
+        <material name="${material}"/>
+      </visual>
+      <collision name="rounded_wrist_collision">
+        <origin xyz="-0.085 0 0"/>
+        <geometry><box size="0.17 0.055 0.053"/></geometry>
+      </collision>
+      <!-- Palm and fixed finger in one dark CAD-style fork shell. -->
+      <visual name="temporary_gripper_fixed_visual">
+        <geometry><mesh filename="package://dual_chess_description/meshes/robot_arm/temporary_gripper_fixed.stl"/></geometry>
+        <material name="gripper_dark"/>
+      </visual>
+      <collision name="gripper_palm_collision">
+        <origin xyz="-0.175 0 0"/>
+        <geometry><box size="0.035 0.055 0.037"/></geometry>
+      </collision>
+      <collision name="fixed_finger_collision">
+        <!-- Collision covers the distal tip only, avoiding the solid palm
+             collider's proximal mounting region. Visual CAD is unchanged. -->
+        <origin xyz="-0.225 0.029 0"/>
+        <geometry><box size="0.060 0.012 0.012"/></geometry>
+      </collision>
+    </link>
+
+    <!-- Fourth arm DOF: wrist pitch. The neutral mount is PARKED for startup:
+         pi/2 + 1.0 rad in parent link2's frame. This avoids both temporary
+         wrists crossing above the board at zero joint command. For hardware,
+         the true mechanical zero and joint limits must be recalibrated. -->
+    <joint name="${prefix}joint3" type="revolute">
+      <parent link="${prefix}link2"/>
+      <child link="${prefix}link3"/>
+      <origin xyz="-0.240 0 0" rpy="0 0 ${pi/2 + 1.0}"/>
+      <axis xyz="0 0 1"/>
+      <!-- TEST bounds only: real mechanical stops, torque and speed unknown. -->
+      <limit lower="-1.2" upper="1.2" effort="5.0" velocity="0.4"/>
+      <dynamics damping="0.02" friction="0.0"/>
+    </joint>
+
+    <link name="${prefix}gripper_finger_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.012"/>
+        <inertia ixx="0.000003" ixy="0" ixz="0" iyy="0.000007" iyz="0" izz="0.000007"/>
+      </inertial>
+      <visual name="rounded_moving_finger">
+        <geometry><mesh filename="package://dual_chess_description/meshes/robot_arm/temporary_gripper_moving.stl"/></geometry>
+        <material name="gripper_dark"/>
+      </visual>
+      <collision name="rounded_moving_finger_collision">
+        <!-- Keep the sliding collision clear of the parent palm for every
+             permitted prismatic position; do not change the finger visual. -->
+        <origin xyz="-0.015 0 0"/>
+        <geometry><box size="0.060 0.012 0.012"/></geometry>
+      </collision>
+    </link>
+    <!-- One sliding finger against one fixed finger. 0m=open, motion in +Y
+         closes the fork; dimensions and forces are placeholder values only. -->
+    <joint name="${prefix}gripper_finger_joint" type="prismatic">
+      <parent link="${prefix}link3"/>
+      <child link="${prefix}gripper_finger_link"/>
+      <origin xyz="-0.210 -0.029 0" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <limit lower="0" upper="0.045" effort="15" velocity="0.02"/>
+      <dynamics damping="0.2" friction="0.0"/>
+    </joint>
+
+    <!-- Explicit ROS TCP frame, used by future IK. It may merge in Gazebo
+         (which is fine: no SDF joint refers to it as an active parent). -->
+    <link name="${prefix}tool0"/>
+    <joint name="${prefix}tool0_fixed" type="fixed">
+      <parent link="${prefix}link3"/>
+      <child link="${prefix}tool0"/>
+      <origin xyz="-0.240 0 0" rpy="0 0 0"/>
+    </joint>
+
+  </xacro:macro>
+</robot>

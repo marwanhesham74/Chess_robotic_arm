@@ -1,0 +1,947 @@
+<?xml version="1.0"?>
+<!-- v1.3.2: supplied full-scale 40cm CAD chessboard.
+     Do NOT substitute the former flat 40cm placeholder for this mesh.
+     The mesh has Y as its up-axis, starts at one outer corner (0,0,0)
+     and uses mm. Its playing squares are 43.75mm (not 50mm):
+     the outside frame is 400mm, while the playing area is 350mm wide.
+     Rotation +90deg about X -> CAD +Y becomes ROS +Z; CAD +Z -> ROS -Y.
+     Board center, fixed robot origins, and a1/h8 frame conventions preserved.
+     Collision is a conservative box+frame approximation because input STL
+     is not watertight and should not be the dynamic collision mesh.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find dual_chess_description)/urdf/board/board_params_cad.xacro"/>
+
+  <xacro:macro name="chess_board" params="parent">
+    <link name="board_link">
+      <visual name="board_cad_visual">
+        <origin xyz="${-board_size/2} ${board_size/2} ${-board_thickness/2}"
+                rpy="${pi/2} 0 0"/>
+        <geometry>
+          <mesh filename="package://dual_chess_description/meshes/chess_board/Board_1_original.STL"
+                scale="0.001 0.001 0.001"/>
+        </geometry>
+        <!-- STL has no per-square material colours. Preserve its geometry. -->
+        <material name="board_wood"/>
+      </visual>
+
+      <!-- Board squares are separate fixed child links below. RViz may apply the
+           first material to all visuals if they share a single URDF link. -->
+      <!-- Collision uses a simplified foundation (z=0..10 mm). -->
+      <collision name="playing_area_collision">
+        <origin xyz="0 0 ${-board_thickness/2 + board_play_surface_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${board_size} ${board_size} ${board_play_surface_height}"/></geometry>
+      </collision>
+      <!-- Four raised perimeter rails, preserving the 35cm playing area. -->
+      <collision name="rim_left_collision">
+        <origin xyz="${-board_size/2 + board_rim_width/2} 0 ${board_play_surface_height/2}"/>
+        <geometry><box size="${board_rim_width} ${board_size} ${board_thickness - board_play_surface_height}"/></geometry>
+      </collision>
+      <collision name="rim_right_collision">
+        <origin xyz="${board_size/2 - board_rim_width/2} 0 ${board_play_surface_height/2}"/>
+        <geometry><box size="${board_rim_width} ${board_size} ${board_thickness - board_play_surface_height}"/></geometry>
+      </collision>
+      <collision name="rim_front_collision">
+        <origin xyz="0 ${-board_size/2 + board_rim_width/2} ${board_play_surface_height/2}"/>
+        <geometry><box size="${board_play_size} ${board_rim_width} ${board_thickness - board_play_surface_height}"/></geometry>
+      </collision>
+      <collision name="rim_back_collision">
+        <origin xyz="0 ${board_size/2 - board_rim_width/2} ${board_play_surface_height/2}"/>
+        <geometry><box size="${board_play_size} ${board_rim_width} ${board_thickness - board_play_surface_height}"/></geometry>
+      </collision>
+
+      <!-- The CAD material/density is UNKNOWN. This 1kg inertia is provisional.
+           As before, board_link must keep an inertial to survive SDF fixed-link
+           conversion and keep its attached reference-frame graph connected. -->
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="1.0"/>
+        <inertia ixx="${(board_size*board_size+board_thickness*board_thickness)/12.0}" ixy="0" ixz="0"
+                 iyy="${(board_size*board_size+board_thickness*board_thickness)/12.0}" iyz="0"
+                 izz="${(2*board_size*board_size)/12.0}"/>
+      </inertial>
+    </link>
+
+    <joint name="board_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="board_link"/>
+      <!-- Board rests on world z=0; link origin at the board vertical centre. -->
+      <origin xyz="0 0 ${board_thickness/2}" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Chessboard frame at the ACTUAL playing-square top plane z=10mm;
+         raised outer frame reaches z=20.1892mm. -->
+    <link name="board_surface"/>
+    <joint name="board_surface_joint" type="fixed">
+      <parent link="board_link"/>
+      <child link="board_surface"/>
+      <origin xyz="0 0 ${board_play_surface_height-board_thickness/2}" rpy="0 0 0"/>
+    </joint>
+
+    <!-- 64 checkerboard squares. One visual per fixed link: both RViz and Gazebo
+         can render the two materials separately. All are DISPLAY-ONLY:
+         no extra collisions, no changes to original CAD mesh or square coords.
+         Parent frame board_surface = physical 10 mm playing surface. -->
+    <xacro:property name="square_visual_size" value="${board_square*0.985}"/>
+    <xacro:property name="square_visual_height" value="0.0008"/>
+    <xacro:property name="square_visual_above_surface" value="0.0002"/>
+
+    <link name="board_square_a1">
+      <visual name="square_a1_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_a1_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_a1"/>
+      <origin xyz="${-3.5*board_square} ${-3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_b1">
+      <visual name="square_b1_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_b1_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_b1"/>
+      <origin xyz="${-2.5*board_square} ${-3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_c1">
+      <visual name="square_c1_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_c1_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_c1"/>
+      <origin xyz="${-1.5*board_square} ${-3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_d1">
+      <visual name="square_d1_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_d1_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_d1"/>
+      <origin xyz="${-0.5*board_square} ${-3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_e1">
+      <visual name="square_e1_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_e1_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_e1"/>
+      <origin xyz="${0.5*board_square} ${-3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_f1">
+      <visual name="square_f1_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_f1_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_f1"/>
+      <origin xyz="${1.5*board_square} ${-3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_g1">
+      <visual name="square_g1_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_g1_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_g1"/>
+      <origin xyz="${2.5*board_square} ${-3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_h1">
+      <visual name="square_h1_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_h1_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_h1"/>
+      <origin xyz="${3.5*board_square} ${-3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_a2">
+      <visual name="square_a2_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_a2_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_a2"/>
+      <origin xyz="${-3.5*board_square} ${-2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_b2">
+      <visual name="square_b2_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_b2_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_b2"/>
+      <origin xyz="${-2.5*board_square} ${-2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_c2">
+      <visual name="square_c2_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_c2_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_c2"/>
+      <origin xyz="${-1.5*board_square} ${-2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_d2">
+      <visual name="square_d2_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_d2_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_d2"/>
+      <origin xyz="${-0.5*board_square} ${-2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_e2">
+      <visual name="square_e2_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_e2_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_e2"/>
+      <origin xyz="${0.5*board_square} ${-2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_f2">
+      <visual name="square_f2_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_f2_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_f2"/>
+      <origin xyz="${1.5*board_square} ${-2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_g2">
+      <visual name="square_g2_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_g2_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_g2"/>
+      <origin xyz="${2.5*board_square} ${-2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_h2">
+      <visual name="square_h2_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_h2_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_h2"/>
+      <origin xyz="${3.5*board_square} ${-2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_a3">
+      <visual name="square_a3_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_a3_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_a3"/>
+      <origin xyz="${-3.5*board_square} ${-1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_b3">
+      <visual name="square_b3_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_b3_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_b3"/>
+      <origin xyz="${-2.5*board_square} ${-1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_c3">
+      <visual name="square_c3_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_c3_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_c3"/>
+      <origin xyz="${-1.5*board_square} ${-1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_d3">
+      <visual name="square_d3_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_d3_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_d3"/>
+      <origin xyz="${-0.5*board_square} ${-1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_e3">
+      <visual name="square_e3_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_e3_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_e3"/>
+      <origin xyz="${0.5*board_square} ${-1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_f3">
+      <visual name="square_f3_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_f3_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_f3"/>
+      <origin xyz="${1.5*board_square} ${-1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_g3">
+      <visual name="square_g3_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_g3_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_g3"/>
+      <origin xyz="${2.5*board_square} ${-1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_h3">
+      <visual name="square_h3_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_h3_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_h3"/>
+      <origin xyz="${3.5*board_square} ${-1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_a4">
+      <visual name="square_a4_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_a4_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_a4"/>
+      <origin xyz="${-3.5*board_square} ${-0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_b4">
+      <visual name="square_b4_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_b4_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_b4"/>
+      <origin xyz="${-2.5*board_square} ${-0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_c4">
+      <visual name="square_c4_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_c4_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_c4"/>
+      <origin xyz="${-1.5*board_square} ${-0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_d4">
+      <visual name="square_d4_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_d4_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_d4"/>
+      <origin xyz="${-0.5*board_square} ${-0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_e4">
+      <visual name="square_e4_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_e4_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_e4"/>
+      <origin xyz="${0.5*board_square} ${-0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_f4">
+      <visual name="square_f4_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_f4_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_f4"/>
+      <origin xyz="${1.5*board_square} ${-0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_g4">
+      <visual name="square_g4_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_g4_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_g4"/>
+      <origin xyz="${2.5*board_square} ${-0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_h4">
+      <visual name="square_h4_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_h4_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_h4"/>
+      <origin xyz="${3.5*board_square} ${-0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_a5">
+      <visual name="square_a5_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_a5_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_a5"/>
+      <origin xyz="${-3.5*board_square} ${0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_b5">
+      <visual name="square_b5_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_b5_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_b5"/>
+      <origin xyz="${-2.5*board_square} ${0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_c5">
+      <visual name="square_c5_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_c5_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_c5"/>
+      <origin xyz="${-1.5*board_square} ${0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_d5">
+      <visual name="square_d5_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_d5_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_d5"/>
+      <origin xyz="${-0.5*board_square} ${0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_e5">
+      <visual name="square_e5_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_e5_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_e5"/>
+      <origin xyz="${0.5*board_square} ${0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_f5">
+      <visual name="square_f5_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_f5_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_f5"/>
+      <origin xyz="${1.5*board_square} ${0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_g5">
+      <visual name="square_g5_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_g5_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_g5"/>
+      <origin xyz="${2.5*board_square} ${0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_h5">
+      <visual name="square_h5_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_h5_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_h5"/>
+      <origin xyz="${3.5*board_square} ${0.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_a6">
+      <visual name="square_a6_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_a6_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_a6"/>
+      <origin xyz="${-3.5*board_square} ${1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_b6">
+      <visual name="square_b6_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_b6_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_b6"/>
+      <origin xyz="${-2.5*board_square} ${1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_c6">
+      <visual name="square_c6_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_c6_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_c6"/>
+      <origin xyz="${-1.5*board_square} ${1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_d6">
+      <visual name="square_d6_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_d6_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_d6"/>
+      <origin xyz="${-0.5*board_square} ${1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_e6">
+      <visual name="square_e6_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_e6_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_e6"/>
+      <origin xyz="${0.5*board_square} ${1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_f6">
+      <visual name="square_f6_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_f6_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_f6"/>
+      <origin xyz="${1.5*board_square} ${1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_g6">
+      <visual name="square_g6_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_g6_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_g6"/>
+      <origin xyz="${2.5*board_square} ${1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_h6">
+      <visual name="square_h6_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_h6_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_h6"/>
+      <origin xyz="${3.5*board_square} ${1.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_a7">
+      <visual name="square_a7_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_a7_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_a7"/>
+      <origin xyz="${-3.5*board_square} ${2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_b7">
+      <visual name="square_b7_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_b7_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_b7"/>
+      <origin xyz="${-2.5*board_square} ${2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_c7">
+      <visual name="square_c7_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_c7_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_c7"/>
+      <origin xyz="${-1.5*board_square} ${2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_d7">
+      <visual name="square_d7_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_d7_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_d7"/>
+      <origin xyz="${-0.5*board_square} ${2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_e7">
+      <visual name="square_e7_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_e7_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_e7"/>
+      <origin xyz="${0.5*board_square} ${2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_f7">
+      <visual name="square_f7_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_f7_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_f7"/>
+      <origin xyz="${1.5*board_square} ${2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_g7">
+      <visual name="square_g7_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_g7_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_g7"/>
+      <origin xyz="${2.5*board_square} ${2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_h7">
+      <visual name="square_h7_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_h7_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_h7"/>
+      <origin xyz="${3.5*board_square} ${2.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_a8">
+      <visual name="square_a8_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_a8_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_a8"/>
+      <origin xyz="${-3.5*board_square} ${3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_b8">
+      <visual name="square_b8_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_b8_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_b8"/>
+      <origin xyz="${-2.5*board_square} ${3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_c8">
+      <visual name="square_c8_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_c8_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_c8"/>
+      <origin xyz="${-1.5*board_square} ${3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_d8">
+      <visual name="square_d8_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_d8_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_d8"/>
+      <origin xyz="${-0.5*board_square} ${3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_e8">
+      <visual name="square_e8_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_e8_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_e8"/>
+      <origin xyz="${0.5*board_square} ${3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_f8">
+      <visual name="square_f8_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_f8_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_f8"/>
+      <origin xyz="${1.5*board_square} ${3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_g8">
+      <visual name="square_g8_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_light"/>
+      </visual>
+    </link>
+    <joint name="board_square_g8_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_g8"/>
+      <origin xyz="${2.5*board_square} ${3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_square_h8">
+      <visual name="square_h8_visual">
+        <origin xyz="0 0 ${square_visual_above_surface+square_visual_height/2}" rpy="0 0 0"/>
+        <geometry><box size="${square_visual_size} ${square_visual_size} ${square_visual_height}"/></geometry>
+        <material name="square_dark"/>
+      </visual>
+    </link>
+    <joint name="board_square_h8_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_square_h8"/>
+      <origin xyz="${3.5*board_square} ${3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_a1">
+      <visual>
+        <origin xyz="0 0 0.001"/>
+        <geometry><box size="${board_square*0.6} ${board_square*0.6} 0.002"/></geometry>
+        <material name="marker_a1"/>
+      </visual>
+    </link>
+    <joint name="board_a1_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_a1"/>
+      <origin xyz="${-3.5*board_square} ${-3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="board_h8">
+      <visual>
+        <origin xyz="0 0 0.001"/>
+        <geometry><box size="${board_square*0.6} ${board_square*0.6} 0.002"/></geometry>
+        <material name="marker_h8"/>
+      </visual>
+    </link>
+    <joint name="board_h8_joint" type="fixed">
+      <parent link="board_surface"/>
+      <child link="board_h8"/>
+      <origin xyz="${3.5*board_square} ${3.5*board_square} 0" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+</robot>

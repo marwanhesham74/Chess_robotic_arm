@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!-- Chess board dimensions derived from the SUPPLIED Board 1_stl.STL (mm -> m).
+     Local STL bounds: X=[0,400], Y=[0,20.18920517], Z=[0,400] millimetres.
+     The playing grid lies at STL Y=10mm and spans X,Z = [25,375] mm.
+     Board/TF coordinates: +X=a->h, +Y=rank 1->8, +Z=up.
+     The STL orientation is corrected within board.macro.xacro; no mesh edits.
+     Robot base offset is still PROVISIONAL, not measured from mechanical CAD.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:property name="board_size" value="0.4"/>
+  <xacro:property name="board_play_size" value="0.35"/>
+  <xacro:property name="board_square" value="${board_play_size/8}"/>
+  <xacro:property name="board_thickness" value="0.020189205169677734"/>
+  <xacro:property name="board_play_surface_height" value="0.010"/>
+  <xacro:property name="board_rim_width" value="${(board_size-board_play_size)/2}"/>
+  <xacro:property name="base_gap" value="0.10"/>
+  <xacro:property name="robot_base_offset" value="${board_size/2 + base_gap}"/>
+</robot>

@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<robot name="dual_chess" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- v1.3 CAD robot entrypoint; same canonical filename/model name as v1.2.
+       Each arm has three actuated joints: base_yaw_joint, joint1, joint2.
+       The chessboard remains a temporary placeholder until its CAD is ready. -->
+  <xacro:arg name="robot1_enabled" default="true"/>
+  <xacro:arg name="robot2_enabled" default="true"/>
+  <xacro:arg name="sim_gazebo" default="false"/>
+  <!-- Compatibility with v1.2 launch; CAD STL is ALWAYS used. -->
+  <xacro:arg name="use_meshes" default="true"/>
+
+  <xacro:include filename="$(find dual_chess_description)/urdf/common/materials.xacro"/>
+  <xacro:include filename="$(find dual_chess_description)/urdf/board/board.macro.xacro"/>
+  <xacro:include filename="$(find dual_chess_description)/urdf/arm/arm_cad.macro.xacro"/>
+  <xacro:include filename="$(find dual_chess_description)/urdf/arm/arm_cad.gazebo.xacro"/>
+
+  <link name="world"/>
+  <!-- Board geometry and mounting dimensions remain provisional. -->
+  <xacro:chess_board parent="world"/>
+
+  <xacro:if value="$(arg robot1_enabled)">
+    <xacro:cad_chess_arm prefix="robot1_" parent="world" material="robot1_blue">
+      <origin xyz="0 ${-robot_base_offset} 0" rpy="0 0 ${pi/2}"/>
+    </xacro:cad_chess_arm>
+  </xacro:if>
+  <xacro:if value="$(arg robot2_enabled)">
+    <xacro:cad_chess_arm prefix="robot2_" parent="world" material="robot2_orange">
+      <origin xyz="0 ${robot_base_offset} 0" rpy="0 0 ${-pi/2}"/>
+    </xacro:cad_chess_arm>
+  </xacro:if>
+
+  <xacro:if value="$(arg sim_gazebo)">
+    <gazebo>
+      <plugin filename="gz-sim-joint-state-publisher-system"
+              name="gz::sim::systems::JointStatePublisher"/>
+    </gazebo>
+    <xacro:if value="$(arg robot1_enabled)">
+      <xacro:cad_chess_arm_gz prefix="robot1_" ns="robot1"/>
+    </xacro:if>
+    <xacro:if value="$(arg robot2_enabled)">
+      <xacro:cad_chess_arm_gz prefix="robot2_" ns="robot2"/>
+    </xacro:if>
+  </xacro:if>
+</robot>
